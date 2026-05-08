@@ -1,4 +1,6 @@
 streamlit
 audio-recorder-streamlit
+deep-translator
 gTTS
-SpeechRecognitition
+SpeechRecognition
+pipwin
