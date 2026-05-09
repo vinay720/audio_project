@@ -1,2 +1,3 @@
-libportaudio2
-libasound2-dev
+ffmpeg
+libsm6
+libxext6
