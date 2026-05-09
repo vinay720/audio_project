@@ -8,9 +8,7 @@ import librosa.display
 import moviepy.editor as mp
 import scipy.fftpack
 import soundfile as sf
-import noisereduce as nr
 import speech_recognition as sr
-import whisper
 
 from pydub import AudioSegment
 from pydub.silence import detect_silence
@@ -29,42 +27,23 @@ st.set_page_config(
     layout="wide"
 )
 
-st.markdown("""
-<style>
-body {
-    background-color: #0E1117;
-    color: white;
-}
-
-.stApp {
-    background-color: #0E1117;
-}
-
-h1, h2, h3 {
-    color: #00FFAA;
-}
-</style>
-""", unsafe_allow_html=True)
-
 st.title("🎵🎥 AI Media Utility Studio")
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12, tab13 = st.tabs([
+tabs = st.tabs([
     "Audio Toolkit",
     "Video Toolkit",
     "Media Analyzer",
     "Frame Processor",
     "Audio Visualizer",
     "Audio to WAV",
-    "Noise Reduction",
     "Voice Changer",
-    "Subtitle Extractor",
     "MP4 to GIF",
     "Speech-to-Text",
     "Beat Detection",
     "Spectrum Analyzer"
 ])
 
-with tab1:
+with tabs[0]:
 
     st.header("🎵 Audio Toolkit")
 
@@ -85,8 +64,8 @@ with tab1:
 
         audio = AudioSegment.from_file(path)
 
-        start = st.number_input("Start Time", 0, key="start")
-        end = st.number_input("End Time", 10, key="end")
+        start = st.number_input("Start Time", 0)
+        end = st.number_input("End Time", 10)
 
         if st.button("Trim Audio"):
 
@@ -100,8 +79,7 @@ with tab1:
 
         convert_type = st.selectbox(
             "Convert To",
-            ["mp3", "wav"],
-            key="convert"
+            ["mp3", "wav"]
         )
 
         if st.button("Convert"):
@@ -110,7 +88,7 @@ with tab1:
 
             audio.export(output, format=convert_type)
 
-            st.success("Converted Successfully")
+            st.audio(output)
 
         if st.button("Normalize Audio"):
 
@@ -130,14 +108,13 @@ with tab1:
 
         st.write("Silence Parts:", silence)
 
-with tab2:
+with tabs[1]:
 
     st.header("🎥 Video Toolkit")
 
     video = st.file_uploader(
         "Upload Video",
-        type=["mp4"],
-        key="video_toolkit"
+        type=["mp4"]
     )
 
     if video:
@@ -169,14 +146,13 @@ with tab2:
 
             st.video(output)
 
-with tab3:
+with tabs[2]:
 
     st.header("📊 Media Analyzer")
 
     file = st.file_uploader(
         "Upload Media",
-        type=["mp3", "wav", "mp4"],
-        key="media"
+        type=["mp3", "wav", "mp4"]
     )
 
     if file:
@@ -225,14 +201,13 @@ with tab3:
 
             st.video(path)
 
-with tab4:
+with tabs[3]:
 
     st.header("🖼 Frame Processor")
 
     video = st.file_uploader(
         "Upload Video",
-        type=["mp4"],
-        key="frame"
+        type=["mp4"]
     )
 
     if video:
@@ -294,14 +269,13 @@ with tab4:
                 file_name="frames.zip"
             )
 
-with tab5:
+with tabs[4]:
 
     st.header("📈 Audio Visualizer")
 
     audio_file = st.file_uploader(
         "Upload Audio",
-        type=["mp3", "wav"],
-        key="visualizer"
+        type=["mp3", "wav"]
     )
 
     if audio_file:
@@ -323,6 +297,8 @@ with tab5:
             ax=ax
         )
 
+        ax.set_title("Waveform")
+
         st.pyplot(fig)
 
         D = librosa.stft(y)
@@ -339,7 +315,6 @@ with tab5:
             sr=sr,
             x_axis='time',
             y_axis='log',
-            cmap='magma',
             ax=ax2
         )
 
@@ -347,15 +322,14 @@ with tab5:
 
         st.pyplot(fig2)
 
-with tab6:
+with tabs[5]:
 
     st.header("🎵 Audio to WAV Converter")
 
     files = st.file_uploader(
         "Upload Audio Files",
         type=["mp3", "wav", "ogg", "flac"],
-        accept_multiple_files=True,
-        key="wav"
+        accept_multiple_files=True
     )
 
     if files:
@@ -368,8 +342,6 @@ with tab6:
 
             with open(path, "wb") as f:
                 f.write(file.read())
-
-            st.audio(path)
 
             audio = AudioSegment.from_file(path)
 
@@ -399,44 +371,13 @@ with tab6:
                 file_name="audio_wav_files.zip"
             )
 
-with tab7:
-
-    st.header("🔇 Noise Reduction")
-
-    audio_file = st.file_uploader(
-        "Upload Audio",
-        type=["wav", "mp3"],
-        key="noise"
-    )
-
-    if audio_file:
-
-        path = f"temp/{audio_file.name}"
-
-        with open(path, "wb") as f:
-            f.write(audio_file.read())
-
-        y, sr = librosa.load(path, sr=None)
-
-        reduced_noise = nr.reduce_noise(
-            y=y,
-            sr=sr
-        )
-
-        output = "outputs/noise_removed.wav"
-
-        sf.write(output, reduced_noise, sr)
-
-        st.audio(output)
-
-with tab8:
+with tabs[6]:
 
     st.header("🎤 Voice Changer")
 
     audio_file = st.file_uploader(
         "Upload Audio",
-        type=["wav", "mp3"],
-        key="voice"
+        type=["wav", "mp3"]
     )
 
     if audio_file:
@@ -471,41 +412,13 @@ with tab8:
 
         st.audio(output)
 
-with tab9:
-
-    st.header("📝 Subtitle Extractor")
-
-    audio_file = st.file_uploader(
-        "Upload Audio/Video",
-        type=["mp3", "wav", "mp4"],
-        key="subtitle"
-    )
-
-    if audio_file:
-
-        path = f"temp/{audio_file.name}"
-
-        with open(path, "wb") as f:
-            f.write(audio_file.read())
-
-        model = whisper.load_model("base")
-
-        result = model.transcribe(path)
-
-        st.text_area(
-            "Generated Subtitle",
-            result["text"],
-            height=300
-        )
-
-with tab10:
+with tabs[7]:
 
     st.header("🎞 MP4 to GIF Converter")
 
     video = st.file_uploader(
         "Upload MP4",
-        type=["mp4"],
-        key="gif"
+        type=["mp4"]
     )
 
     if video:
@@ -523,14 +436,13 @@ with tab10:
 
         st.image(gif_path)
 
-with tab11:
+with tabs[8]:
 
-    st.header("🧠 AI Speech-to-Text")
+    st.header("🧠 Speech-to-Text")
 
     audio_file = st.file_uploader(
         "Upload WAV File",
-        type=["wav"],
-        key="speech"
+        type=["wav"]
     )
 
     if audio_file:
@@ -554,14 +466,13 @@ with tab11:
                 height=300
             )
 
-with tab12:
+with tabs[9]:
 
     st.header("🥁 Beat Detection")
 
     audio_file = st.file_uploader(
         "Upload Audio",
-        type=["mp3", "wav"],
-        key="beat"
+        type=["mp3", "wav"]
     )
 
     if audio_file:
@@ -581,14 +492,13 @@ with tab12:
         st.write("🎵 Tempo:", tempo)
         st.write("🥁 Beat Frames:", beats)
 
-with tab13:
+with tabs[10]:
 
     st.header("📊 Spectrum Analyzer")
 
     audio_file = st.file_uploader(
         "Upload Audio",
-        type=["wav", "mp3"],
-        key="spectrum"
+        type=["wav", "mp3"]
     )
 
     if audio_file:
