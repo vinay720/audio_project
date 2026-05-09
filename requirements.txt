@@ -2,10 +2,13 @@ streamlit
 numpy
 matplotlib
 librosa
-moviepy
+moviepy==1.0.3
+imageio
+imageio-ffmpeg
 pydub
 soundfile
 scipy
 SpeechRecognition
 opencv-python-headless
 ffmpeg-python
+decorator==4.4.2
