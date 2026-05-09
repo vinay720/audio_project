@@ -1,7 +1,6 @@
 import streamlit as st
 import os
 import zipfile
-import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import librosa
@@ -15,6 +14,11 @@ import whisper
 
 from pydub import AudioSegment
 from pydub.silence import detect_silence
+
+try:
+    import cv2
+except:
+    st.error("OpenCV not installed")
 
 os.makedirs("temp", exist_ok=True)
 os.makedirs("outputs", exist_ok=True)
@@ -44,34 +48,30 @@ h1, h2, h3 {
 
 st.title("🎵🎥 AI Media Utility Studio")
 
-st.sidebar.title("Modules")
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12, tab13 = st.tabs([
+    "Audio Toolkit",
+    "Video Toolkit",
+    "Media Analyzer",
+    "Frame Processor",
+    "Audio Visualizer",
+    "Audio to WAV",
+    "Noise Reduction",
+    "Voice Changer",
+    "Subtitle Extractor",
+    "MP4 to GIF",
+    "Speech-to-Text",
+    "Beat Detection",
+    "Spectrum Analyzer"
+])
 
-menu = st.sidebar.selectbox(
-    "Select Module",
-    [
-        "Audio Toolkit",
-        "Video Toolkit",
-        "Media Analyzer",
-        "Frame Processor",
-        "Audio Visualizer",
-        "Audio to WAV Converter",
-        "Noise Reduction",
-        "Voice Changer",
-        "Subtitle Extractor",
-        "MP4 to GIF Converter",
-        "AI Speech-to-Text",
-        "Beat Detection",
-        "Spectrum Analyzer"
-    ]
-)
-
-if menu == "Audio Toolkit":
+with tab1:
 
     st.header("🎵 Audio Toolkit")
 
     audio_file = st.file_uploader(
         "Upload Audio",
-        type=["mp3", "wav"]
+        type=["mp3", "wav"],
+        key="audio_toolkit"
     )
 
     if audio_file:
@@ -85,8 +85,8 @@ if menu == "Audio Toolkit":
 
         audio = AudioSegment.from_file(path)
 
-        start = st.number_input("Start Time", 0)
-        end = st.number_input("End Time", 10)
+        start = st.number_input("Start Time", 0, key="start")
+        end = st.number_input("End Time", 10, key="end")
 
         if st.button("Trim Audio"):
 
@@ -100,7 +100,8 @@ if menu == "Audio Toolkit":
 
         convert_type = st.selectbox(
             "Convert To",
-            ["mp3", "wav"]
+            ["mp3", "wav"],
+            key="convert"
         )
 
         if st.button("Convert"):
@@ -129,13 +130,14 @@ if menu == "Audio Toolkit":
 
         st.write("Silence Parts:", silence)
 
-elif menu == "Video Toolkit":
+with tab2:
 
     st.header("🎥 Video Toolkit")
 
     video = st.file_uploader(
         "Upload Video",
-        type=["mp4"]
+        type=["mp4"],
+        key="video_toolkit"
     )
 
     if video:
@@ -167,13 +169,14 @@ elif menu == "Video Toolkit":
 
             st.video(output)
 
-elif menu == "Media Analyzer":
+with tab3:
 
     st.header("📊 Media Analyzer")
 
     file = st.file_uploader(
         "Upload Media",
-        type=["mp3", "wav", "mp4"]
+        type=["mp3", "wav", "mp4"],
+        key="media"
     )
 
     if file:
@@ -190,8 +193,6 @@ elif menu == "Media Analyzer":
 
             audio = AudioSegment.from_file(path)
 
-            st.subheader("🎵 Audio Information")
-
             st.write("⏱ Duration:", len(audio)/1000, "Seconds")
             st.write("🔊 Channels:", audio.channels)
             st.write("🎚 Sample Rate:", audio.frame_rate, "Hz")
@@ -202,8 +203,6 @@ elif menu == "Media Analyzer":
         elif "video" in file.type:
 
             clip = mp.VideoFileClip(path)
-
-            st.subheader("🎥 Video Information")
 
             st.write("⏱ Duration:", round(clip.duration, 2), "Seconds")
             st.write("🎞 FPS:", clip.fps)
@@ -226,13 +225,14 @@ elif menu == "Media Analyzer":
 
             st.video(path)
 
-elif menu == "Frame Processor":
+with tab4:
 
     st.header("🖼 Frame Processor")
 
     video = st.file_uploader(
         "Upload Video",
-        type=["mp4"]
+        type=["mp4"],
+        key="frame"
     )
 
     if video:
@@ -286,8 +286,6 @@ elif menu == "Frame Processor":
                     file
                 )
 
-        st.success("Frames Extracted")
-
         with open(zip_path, "rb") as f:
 
             st.download_button(
@@ -296,13 +294,14 @@ elif menu == "Frame Processor":
                 file_name="frames.zip"
             )
 
-elif menu == "Audio Visualizer":
+with tab5:
 
     st.header("📈 Audio Visualizer")
 
     audio_file = st.file_uploader(
         "Upload Audio",
-        type=["mp3", "wav"]
+        type=["mp3", "wav"],
+        key="visualizer"
     )
 
     if audio_file:
@@ -316,8 +315,6 @@ elif menu == "Audio Visualizer":
 
         y, sr = librosa.load(path, sr=None)
 
-        st.subheader("🎵 Waveform")
-
         fig, ax = plt.subplots(figsize=(12, 4))
 
         librosa.display.waveshow(
@@ -327,8 +324,6 @@ elif menu == "Audio Visualizer":
         )
 
         st.pyplot(fig)
-
-        st.subheader("📊 Spectrogram")
 
         D = librosa.stft(y)
 
@@ -352,14 +347,15 @@ elif menu == "Audio Visualizer":
 
         st.pyplot(fig2)
 
-elif menu == "Audio to WAV Converter":
+with tab6:
 
     st.header("🎵 Audio to WAV Converter")
 
     files = st.file_uploader(
         "Upload Audio Files",
         type=["mp3", "wav", "ogg", "flac"],
-        accept_multiple_files=True
+        accept_multiple_files=True,
+        key="wav"
     )
 
     if files:
@@ -395,8 +391,6 @@ elif menu == "Audio to WAV Converter":
 
                     zipf.write(file_path, filename)
 
-        st.success("Conversion Completed")
-
         with open(zip_path, "rb") as f:
 
             st.download_button(
@@ -405,13 +399,14 @@ elif menu == "Audio to WAV Converter":
                 file_name="audio_wav_files.zip"
             )
 
-elif menu == "Noise Reduction":
+with tab7:
 
     st.header("🔇 Noise Reduction")
 
     audio_file = st.file_uploader(
         "Upload Audio",
-        type=["wav", "mp3"]
+        type=["wav", "mp3"],
+        key="noise"
     )
 
     if audio_file:
@@ -434,13 +429,14 @@ elif menu == "Noise Reduction":
 
         st.audio(output)
 
-elif menu == "Voice Changer":
+with tab8:
 
     st.header("🎤 Voice Changer")
 
     audio_file = st.file_uploader(
         "Upload Audio",
-        type=["wav", "mp3"]
+        type=["wav", "mp3"],
+        key="voice"
     )
 
     if audio_file:
@@ -475,13 +471,14 @@ elif menu == "Voice Changer":
 
         st.audio(output)
 
-elif menu == "Subtitle Extractor":
+with tab9:
 
     st.header("📝 Subtitle Extractor")
 
     audio_file = st.file_uploader(
         "Upload Audio/Video",
-        type=["mp3", "wav", "mp4"]
+        type=["mp3", "wav", "mp4"],
+        key="subtitle"
     )
 
     if audio_file:
@@ -501,13 +498,14 @@ elif menu == "Subtitle Extractor":
             height=300
         )
 
-elif menu == "MP4 to GIF Converter":
+with tab10:
 
     st.header("🎞 MP4 to GIF Converter")
 
     video = st.file_uploader(
         "Upload MP4",
-        type=["mp4"]
+        type=["mp4"],
+        key="gif"
     )
 
     if video:
@@ -525,13 +523,14 @@ elif menu == "MP4 to GIF Converter":
 
         st.image(gif_path)
 
-elif menu == "AI Speech-to-Text":
+with tab11:
 
     st.header("🧠 AI Speech-to-Text")
 
     audio_file = st.file_uploader(
         "Upload WAV File",
-        type=["wav"]
+        type=["wav"],
+        key="speech"
     )
 
     if audio_file:
@@ -555,13 +554,14 @@ elif menu == "AI Speech-to-Text":
                 height=300
             )
 
-elif menu == "Beat Detection":
+with tab12:
 
     st.header("🥁 Beat Detection")
 
     audio_file = st.file_uploader(
         "Upload Audio",
-        type=["mp3", "wav"]
+        type=["mp3", "wav"],
+        key="beat"
     )
 
     if audio_file:
@@ -581,13 +581,14 @@ elif menu == "Beat Detection":
         st.write("🎵 Tempo:", tempo)
         st.write("🥁 Beat Frames:", beats)
 
-elif menu == "Spectrum Analyzer":
+with tab13:
 
     st.header("📊 Spectrum Analyzer")
 
     audio_file = st.file_uploader(
         "Upload Audio",
-        type=["wav", "mp3"]
+        type=["wav", "mp3"],
+        key="spectrum"
     )
 
     if audio_file:
